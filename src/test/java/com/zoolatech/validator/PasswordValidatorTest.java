@@ -1,108 +1,106 @@
 package com.zoolatech.validator;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PasswordValidatorTest {
 
-    private PasswordValidator passwordValidator = new PasswordValidator(new CommonPasswordChecker());
+    private CommonPasswordChecker commonPasswordCheckerMock = Mockito.mock(CommonPasswordChecker.class);
+    private PasswordValidator passwordValidator = new PasswordValidator(commonPasswordCheckerMock);
 
     @Test
-    public void checkPasswordTest() {
-        assertAll(
-                () -> assertTrue(passwordValidator.checkPassword("qwerTy@43")),
-                () -> assertFalse(passwordValidator.checkPassword("qwerf@45553")),
-                () -> assertFalse(passwordValidator.checkPassword("qwerty")),
-                () -> assertFalse(passwordValidator.checkPassword("putinhuilo"))
-        );
+    public void checkPasswordSuccessTest() {
+        assertFalse(passwordValidator.checkPassword("qwerTy@43"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"qwerf@45553", "qwerty", "putinhuilo"})
+    public void checkPasswordFailCasesTest(String param) {
+        assertFalse(passwordValidator.checkPassword(param));
     }
 
     @Test
-    public void passwordLengthTest() {
-        assertAll(
-                () -> assertFalse(passwordValidator.checkPasswordLength("nnsosi@pesyn#putinhahahfm23242ndsn")),
-                () -> assertFalse(passwordValidator.checkPasswordLength("1234")),
-                () -> assertTrue(passwordValidator.checkPasswordLength("12345678"))
-        );
+    public void passwordLengthSuccessTest() {
+        assertTrue(passwordValidator.checkPasswordLength("12345678"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {" ", "test", "nnsosi@pesyn#putinhahahfm23242ndsn"})
+    public void passwordLengthFailTest(String param) {
+        assertFalse(passwordValidator.checkPasswordLength(param));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "test"})
+    public void passwordNullSuccessTest(String param) {
+        assertTrue(passwordValidator.checkPasswordNull(param));
     }
 
     @Test
-    public void passwordNullTest() {
-        assertAll(
-                () -> assertFalse(passwordValidator.checkPasswordNull(null)),
-                () -> assertTrue(passwordValidator.checkPasswordNull("")),
-                () -> assertTrue(passwordValidator.checkPasswordNull(" ")),
-                () -> assertTrue(passwordValidator.checkPasswordNull("test"))
-        );
+    public void passwordNullFailTest() {
+        assertFalse(passwordValidator.checkPasswordNull(null));
     }
 
     @Test
-    public void checkPasswordUpperLowerCaseTest() {
-        assertAll(
-                () -> assertThrows(RuntimeException.class, () -> passwordValidator.checkPasswordUpperLowerCase(null)),
-                () -> assertFalse(passwordValidator.checkPasswordUpperLowerCase("")),
-                () -> assertFalse(passwordValidator.checkPasswordUpperLowerCase(" ")),
-                () -> assertFalse(passwordValidator.checkPasswordUpperLowerCase("test")),
-                () -> assertFalse(passwordValidator.checkPasswordUpperLowerCase("TEST")),
-                () -> assertTrue(passwordValidator.checkPasswordUpperLowerCase("tEsT"))
-        );
+    public void checkPasswordUpperLowerCaseSuccessTest() {
+        assertTrue(passwordValidator.checkPasswordUpperLowerCase("tEsT"));
     }
 
-    @Test
-    public void checkPasswordHasNumberTest() {
-        assertAll(
-                () -> assertThrows(RuntimeException.class, () -> passwordValidator.checkPasswordHasNumber(null)),
-                () -> assertFalse(passwordValidator.checkPasswordHasNumber("")),
-                () -> assertFalse(passwordValidator.checkPasswordHasNumber(" ")),
-                () -> assertFalse(passwordValidator.checkPasswordHasNumber("test")),
-                () -> assertTrue(passwordValidator.checkPasswordHasNumber("test1")),
-                () -> assertTrue(passwordValidator.checkPasswordHasNumber("21342"))
-        );
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "test", "TEST"})
+    public void checkPasswordUpperLowerCaseFailCasesTest(String param) {
+        assertFalse(passwordValidator.checkPasswordUpperLowerCase(param));
     }
 
-    @Test
-    public void checkPasswordSpecialCharacterTest() {
-        assertAll(
-                () -> assertThrows(RuntimeException.class, () -> passwordValidator.checkPasswordSpecialCharacter(null)),
-                () -> assertFalse(passwordValidator.checkPasswordSpecialCharacter("")),
-                () -> assertFalse(passwordValidator.checkPasswordSpecialCharacter(" ")),
-                () -> assertFalse(passwordValidator.checkPasswordSpecialCharacter("test")),
-                () -> assertTrue(passwordValidator.checkPasswordSpecialCharacter("test()")),
-                () -> assertTrue(passwordValidator.checkPasswordSpecialCharacter("()#$%&@/?!"))
-        );
+    @ParameterizedTest
+    @ValueSource(strings = {"21342", "test1"})
+    public void checkPasswordHasNumberSuccessCasesTest(String param) {
+        assertTrue(passwordValidator.checkPasswordHasNumber(param));
     }
 
-    @Test
-    public void checkPasswordContinuousNumbersTest() {
-        assertAll(
-                () -> assertThrows(RuntimeException.class, () -> passwordValidator.checkPasswordContinuousNumbers(null)),
-                () -> assertFalse(passwordValidator.checkPasswordContinuousNumbers("test123")),
-                () -> assertFalse(passwordValidator.checkPasswordContinuousNumbers("123test")),
-                () -> assertTrue(passwordValidator.checkPasswordContinuousNumbers("te12st")),
-                () -> assertTrue(passwordValidator.checkPasswordContinuousNumbers("142")),
-                () -> assertTrue(passwordValidator.checkPasswordContinuousNumbers("")),
-                () -> assertTrue(passwordValidator.checkPasswordContinuousNumbers("test1")),
-                () -> assertTrue(passwordValidator.checkPasswordContinuousNumbers("1test")),
-                () -> assertTrue(passwordValidator.checkPasswordContinuousNumbers("test")),
-                () -> assertTrue(passwordValidator.checkPasswordContinuousNumbers("t1e2s3t"))
-        );
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "test"})
+    public void checkPasswordHasNumberFailCasesTest(String param) {
+        assertFalse(passwordValidator.checkPasswordHasNumber(param));
     }
 
-    @Test
-    public void checkPasswordSameNumberTest() {
-        assertAll(
-                () -> assertThrows(RuntimeException.class, () -> passwordValidator.checkPasswordSameNumber(null)),
-                () -> assertFalse(passwordValidator.checkPasswordSameNumber("1111test")),
-                () -> assertFalse(passwordValidator.checkPasswordSameNumber("test1111")),
-                () -> assertFalse(passwordValidator.checkPasswordSameNumber("te2222st")),
-                () -> assertFalse(passwordValidator.checkPasswordSameNumber("2222")),
-                () -> assertTrue(passwordValidator.checkPasswordSameNumber("")),
-                () -> assertTrue(passwordValidator.checkPasswordSameNumber(" ")),
-                () -> assertTrue(passwordValidator.checkPasswordSameNumber("test")),
-                () -> assertTrue(passwordValidator.checkPasswordSameNumber("test123")),
-                () -> assertTrue(passwordValidator.checkPasswordSameNumber("111222333")),
-                () -> assertTrue(passwordValidator.checkPasswordSameNumber("test111222333"))
-        );
+    @ParameterizedTest
+    @ValueSource(strings = {"test()", "()#$%&@/?!"})
+    public void checkPasswordSpecialCharacterSuccessCasesTest(String param) {
+        assertTrue(passwordValidator.checkPasswordSpecialCharacter(param));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "test"})
+    public void checkPasswordSpecialCharacterFailCasesTest(String param) {
+        assertFalse(passwordValidator.checkPasswordSpecialCharacter(param));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"t1e2s3t", "test", "test112233", "1test"})
+    public void checkPasswordContinuousNumberSuccessCasesTest(String param) {
+        assertTrue(passwordValidator.checkPasswordContinuousNumbers(param));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"test123", "123test"})
+    public void checkPasswordContinuousNumberFailCasesTest(String param) {
+        assertFalse(passwordValidator.checkPasswordContinuousNumbers(param));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"test", "test123", "112233"})
+    public void checkPasswordSameNumberSuccessCasesTest(String param) {
+        assertTrue(passwordValidator.checkPasswordSameNumber(param));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"1111test", "test1111", "te2222st", "2222"})
+    public void checkPasswordSameNumberFailCasesTest(String param) {
+        assertFalse(passwordValidator.checkPasswordSameNumber(param));
     }
 }
