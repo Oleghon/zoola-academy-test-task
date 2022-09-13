@@ -1,11 +1,13 @@
 package com.zoolatech.validator;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 
 public class PasswordValidatorTest {
 
@@ -14,7 +16,8 @@ public class PasswordValidatorTest {
 
     @Test
     public void checkPasswordSuccessTest() {
-        assertFalse(passwordValidator.checkPassword("qwerTy@43"));
+        Mockito.when(commonPasswordCheckerMock.checkCommonPassword(anyString())).thenReturn(true);
+        assertTrue(passwordValidator.checkPassword("qwerTy@43"));
     }
 
     @ParameterizedTest
